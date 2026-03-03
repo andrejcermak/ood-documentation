@@ -80,12 +80,14 @@ OpenStack hook
   end_time=$(date +%s)
   elapsed_time=$((end_time - start_time))
   token_file=/tmp/$USER-os-token.json
-  
+  temp_file=$(mktemp "/tmp/$USER-os-token.json.XXXXXX")
+  user_gid=$(id -gn $USER)
+
   if [ $exit_code -eq 0 ]; then
-    rm -f $token_file
-    echo "$OUTPUT" > $token_file
-    chown $USER:<YOUR_USER_GROUP> $token_file
-    chmod 600 $token_file
+    echo "$OUTPUT" > $temp_file
+    chown $USER:$user_gid $temp_file
+    chmod 600 $temp_file
+    mv $temp_file $token_file
     echo "openstack token issued in $elapsed_time seconds"
   elif [ $exit_code -eq 124 ]; then
       echo "Command timed out - OpenStack might be unreachable"
